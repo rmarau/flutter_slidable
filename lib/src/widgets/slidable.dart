@@ -543,6 +543,7 @@ class SlidableState extends State<Slidable>
   SlidableRenderingMode get renderingMode => _renderingMode;
 
   ScrollPosition _scrollPosition;
+  double _scrollViewportDimentions;
   bool _dragUnderway = false;
   Size _sizePriorToCollapse;
   bool _dismissing = false;
@@ -608,8 +609,10 @@ class SlidableState extends State<Slidable>
   void _addScrollingNotifierListener() {
     if (widget.closeOnScroll) {
       _scrollPosition = Scrollable.of(context)?.position;
-      if (_scrollPosition != null)
+      if (_scrollPosition != null) {
         _scrollPosition.isScrollingNotifier.addListener(_isScrollingListener);
+        _scrollViewportDimentions = _scrollPosition.viewportDimension;
+      }
     }
   }
 
@@ -685,8 +688,17 @@ class SlidableState extends State<Slidable>
   void _isScrollingListener() {
     if (!widget.closeOnScroll || _scrollPosition == null) return;
 
+    // Soft keyboard popping out may trigger this Listener.
+    // Probing variations on the viewport' size to detect this case.
+    // Comparing with == would be fine to detect the keyboard popping out. 
+    // But because [_scrollViewportDimentions] will not update on a
+    //keyboard dismiss (_isScrollingListener is not called) it leads to 
+    //inconsistent values. Hence comparing with >=
+    final isManualScroll = _scrollPosition.viewportDimension >= _scrollViewportDimentions;
+    _scrollViewportDimentions = _scrollPosition.viewportDimension;
+
     // When a scroll starts close this.
-    if (_scrollPosition.isScrollingNotifier.value) {
+    if (_scrollPosition.isScrollingNotifier.value && isManualScroll) {
       close();
     }
   }
