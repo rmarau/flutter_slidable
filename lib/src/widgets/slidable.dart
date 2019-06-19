@@ -663,7 +663,7 @@ class SlidableState extends State<Slidable>
   }
 
   void _flingAnimationController() {
-    if (!_dismissing) {
+    if (!_dismissing && mounted) {
       _overallMoveController.fling(velocity: -1.0);
     }
   }
