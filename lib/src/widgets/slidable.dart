@@ -745,7 +745,7 @@ class SlidableState extends State<Slidable>
     // But because [_scrollViewportDimentions] will not update on a
     //keyboard dismiss (_isScrollingListener is not called) it leads to 
     //inconsistent values. Hence comparing with >=
-    final isManualScroll = _scrollPosition.viewportDimension >= _scrollViewportDimentions;
+    final isManualScroll = _scrollPosition.viewportDimension >= (_scrollViewportDimentions ?? 0);
     _scrollViewportDimentions = _scrollPosition.viewportDimension;
 
     // When a scroll starts close this.
