@@ -415,6 +415,7 @@ class Slidable extends StatefulWidget {
     SlidableDismissal dismissal,
     SlidableController controller,
     double fastThreshold,
+    bool clearFocusOnStartDrag = false,
   }) : this.builder(
           key: key,
           child: child,
@@ -431,6 +432,7 @@ class Slidable extends StatefulWidget {
           dismissal: dismissal,
           controller: controller,
           fastThreshold: fastThreshold,
+          clearFocusOnStartDrag:clearFocusOnStartDrag,
         );
 
   /// Creates a widget that can be slid.
@@ -463,6 +465,7 @@ class Slidable extends StatefulWidget {
     this.dismissal,
     this.controller,
     double fastThreshold,
+    this.clearFocusOnStartDrag = false,
   })  : assert(actionPane != null),
         assert(direction != null),
         assert(
@@ -482,6 +485,7 @@ class Slidable extends StatefulWidget {
         assert(fastThreshold == null || fastThreshold >= .0,
             'fastThreshold must be positive'),
         fastThreshold = fastThreshold ?? _kFastThreshold,
+        assert(clearFocusOnStartDrag != null),
         super(key: key);
 
   /// The widget below this widget in the tree.
@@ -534,6 +538,13 @@ class Slidable extends StatefulWidget {
 
   /// The threshold used to know if a movement was fast and request to open/close the actions.
   final double fastThreshold;
+
+  /// Specifies to clear the Focus when starting to drag.
+  /// This allows a TextField to capture the unfocus event and save some state before Slidable 
+  /// refreshes the widget 
+  ///
+  /// Defaults to false.
+  final bool clearFocusOnStartDrag;
 
   /// The state from the closest instance of this class that encloses the given context.
   static SlidableState of(BuildContext context) {
@@ -755,6 +766,14 @@ class SlidableState extends State<Slidable>
   }
 
   void _handleDragStart(DragStartDetails details) {
+    
+    if (widget.clearFocusOnStartDrag){
+      FocusScopeNode currentFocus = FocusScope.of(context);
+
+      if (!currentFocus.hasPrimaryFocus)
+        currentFocus.unfocus();
+    }
+
     _dragUnderway = true;
     widget.controller?.activeState = this;
     _dragExtent =
